@@ -9,6 +9,7 @@ version          '0.0.1'
 supports 'ubuntu'
 
 depends 'ark', '>=0.1.0'
+depends 'limits', '>=1.0.0'
 depends 'ssh'
 depends 'sudo'
 

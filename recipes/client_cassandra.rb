@@ -7,9 +7,10 @@
 
 user default['datos']['recoverx']['cassandra']['user'] do
   comment 'Default user for Datos RecoverX'
-  home default['datos']['recoverx']['cassandra']['user_homedir']
-  uid default['datos']['recoverx']['cassandra']['uid']
-  gid default['datos']['recoverx']['cassandra']['group']
+  home node['datos']['recoverx']['cassandra']['user_homedir']
+  uid node['datos']['recoverx']['cassandra']['uid']
+  gid node['datos']['recoverx']['cassandra']['group']
+  action :create
 end
 
 # Make sure the home directory has the proper permissions
