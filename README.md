@@ -1,0 +1,89 @@
+RecoverX Cookbook
+=================
+This installs and configures Datos.io RecoverX
+
+Requirements
+------------
+#### Chef
+Chef version 0.10.10+ and Ohai 0.6.12+ are required.
+
+#### Platform
+- Ubuntu Trusty 14.04
+
+Attributes
+----------
+TODO: List your cookbook attributes here.
+
+e.g.
+#### recoverx::default
+<table>
+  <tr>
+    <th>Key</th>
+    <th>Type</th>
+    <th>Description</th>
+    <th>Default</th>
+  </tr>
+  <tr>
+    <td><tt>['recoverx']['bacon']</tt></td>
+    <td>Boolean</td>
+    <td>whether to include bacon</td>
+    <td><tt>true</tt></td>
+  </tr>
+</table>
+
+Usage
+-----
+#### recoverx::recoverx
+This is the recipe that is used to set up the RecoverX cluster.
+
+Set up a role for the RecoverX cluster. Some notes about the role:
+
+* For the SSH settings to take effect, the `ssh` cookbook must be installed
+
+```ruby
+name 'recoverx'
+description 'RecoverX machine role'
+run_list(
+  'recipe[recoverx::recoverx]'
+)
+
+default_attributes(
+  openssh: {
+    server: {
+      'max_sessions': '500',
+      'max_startups': '500:1:500'
+    }
+  }
+)
+```
+
+#### recoverx::default
+TODO: Write usage instructions for each cookbook.
+
+e.g.
+Just include `recoverx` in your node's `run_list`:
+
+```json
+{
+  "name":"my_node",
+  "run_list": [
+    "recipe[recoverx]"
+  ]
+}
+```
+
+Contributing
+------------
+TODO: (optional) If this is a public cookbook, detail the process for contributing. If this is a private cookbook, remove this section.
+
+e.g.
+1. Fork the repository on Github
+2. Create a named feature branch (like `add_component_x`)
+3. Write your change
+4. Write tests for your change (if applicable)
+5. Run the tests, ensuring they all pass
+6. Submit a Pull Request using Github
+
+Authors
+-------
+* Author:: Eric Lubow (@elubow)
