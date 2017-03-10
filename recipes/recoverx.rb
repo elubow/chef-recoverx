@@ -5,7 +5,10 @@
 # Description:: Install/configure RecoverX on a node
 #
 
+# tag the node so we can search for it in the hosts file later
+tag('recoverx_node')
 
+# ensure sudo capabilities are met for the recoverx nodes
 sudo 'recoverx' do
   user      default['datos']['recoverx']['user']
   nopass    true
@@ -32,3 +35,5 @@ limits_config '90-nproc' do
 end
 
 # TODO Check to see if the /tmp dir has > 2G of free space on the partition
+
+include_recipe 'recoverx::hosts'

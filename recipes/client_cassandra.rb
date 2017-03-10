@@ -5,6 +5,10 @@
 # Description:: Configure a cassandra node to backup to RecoverX
 #
 
+# tag the node so we can search for it in the hosts file later
+tag('recoverx_client_cassandra')
+
+
 user default['datos']['recoverx']['cassandra']['user'] do
   comment 'Default user for Datos RecoverX'
   home node['datos']['recoverx']['cassandra']['user_homedir']
@@ -33,3 +37,4 @@ execute 'chmod cassandra data directory' do
   action :run
 end
 
+include_recipe 'recoverx::hosts'
