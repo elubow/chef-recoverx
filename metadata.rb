@@ -8,11 +8,11 @@ version          '0.0.1'
 
 supports 'ubuntu'
 
-depends 'ark', '>=0.1.0'
 depends 'hostsfile'
 depends 'limits', '>=1.0.0'
-depends 'ssh'
+depends 'openssh'
 depends 'sudo'
+depends 'tarball', '>=0.0.1'
 
 provides 'service::recoverx'
 

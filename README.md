@@ -41,13 +41,29 @@ Set up a role for the RecoverX cluster. Some notes about the role:
 * For the SSH settings to take effect, the `ssh` cookbook must be installed
 
 ```ruby
-name 'recoverx'
-description 'RecoverX machine role'
+name 'recoverx-mongodb-server'
+description 'MongoDB backup role for RecoverX node'
 run_list(
-  'recipe[recoverx::recoverx]'
+  'recipe[recoverx::recoverx]',
+  'recipe[recoverx::mongo]'
 )
 
 default_attributes(
+  ebs: {
+    directory: '/data',
+    size: 300,
+    volume_type: 'gp2',
+    filesystem: 'xfs',
+    volume_name: 'MongoDB Data'
+  },
+  datos: {
+    recoverx: {
+      node_type: 'mongodb',
+      version: '1.2.10_2017-03-09-20-11',
+      download_url: 'https://s3.amazonaws.com/com.simplereach.packages/datos_1.2.10_2017-03-09-20-11_centos6.tar.gz',
+      storage_type: 's3'
+    }
+  },
   openssh: {
     server: {
       'max_sessions': '500',
