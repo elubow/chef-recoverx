@@ -5,6 +5,14 @@
 # Description:: Do the additional Mongodb specific configuration for RecoverX nodes
 #
 
+group node['datos']['recoverx']['mongodb']['run_group'] do
+  members node['datos']['recoverx']['mongodb']['user']
+  append true
+  action :modify
+end
+
+
+
 # <datos_user>$sudo chown root <datos_install>/lib/fuse/bin/fusermount
 # <datos_user>$sudo chmod u+s <datos_install>/lib/fuse/bin/fusermount
 directory "#{node['datos']['recoverx']['install_dir']}/lib/fuse/bin/fusermount" do

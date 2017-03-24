@@ -12,24 +12,6 @@ Chef version 0.11.0+ and Ohai 0.7.0+ are required.
 
 Attributes
 ----------
-TODO: List your cookbook attributes here.
-
-e.g.
-#### recoverx::default
-<table>
-  <tr>
-    <th>Key</th>
-    <th>Type</th>
-    <th>Description</th>
-    <th>Default</th>
-  </tr>
-  <tr>
-    <td><tt>['recoverx']['bacon']</tt></td>
-    <td>Boolean</td>
-    <td>whether to include bacon</td>
-    <td><tt>true</tt></td>
-  </tr>
-</table>
 
 Usage
 -----
@@ -55,6 +37,9 @@ default_attributes(
       version: '1.2.10_2017-03-09-20-11',
       download_url: 'https://s3.amazonaws.com/com.mycompany.packages/datos_1.2.10_2017-03-09-20-11_centos6.tar.gz',
       storage_type: 's3'
+    },
+    mongodb: {
+      mongodb_group: 'mongodb'
     }
   },
   openssh: {
