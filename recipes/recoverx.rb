@@ -8,10 +8,44 @@
 # tag the node so we can search for it in the hosts file later
 tag('recoverx_node')
 
+# probably should factor out the user stuff in to it's own recipe
+ohai 'reload_passwd' do
+  action :nothing
+  if Ohai::VERSION >= '7.0.0'
+    plugin 'etc'
+  else
+    plugin 'passwd'
+  end
+end
+
+group node['datos']['recoverx']['group'] do
+  gid node['datos']['recoverx']['gid']
+  action :create
+end
+
+user node['datos']['recoverx']['user'] do
+  manage_home true
+  comment 'Default user for Datos RecoverX'
+  uid node['datos']['recoverx']['uid']
+  gid node['datos']['recoverx']['gid']
+  action :create
+end
+
+ohai 'reload_passwd'
+
+# Make sure the home directory has the proper permissions
+# ensure the install directory exists
+directory node['datos']['recoverx']['user_homedir'] do
+  mode '0770'
+  owner node['datos']['recoverx']['user']
+  group node['datos']['recoverx']['group']
+  action :create
+end
+
 # ensure sudo capabilities are met for the recoverx nodes
 sudo 'recoverx' do
-  user      default['datos']['recoverx']['user']
-  nopass    true
+  user      node['datos']['recoverx']['user']
+  nopasswd  true
   commands  ['/sbin/chkconfig', '/bin/cp']
 end
 
@@ -40,6 +74,7 @@ include_recipe 'recoverx::hosts'
 
 if node['datos']['recoverx']['storage_type'].downcase == 'nfs'
   # TODO implement support for NFS mounts
+  # TODO uid/gid's must match for NFS setup
 elsif node['datos']['recoverx']['storage_type'].downcase == 'gcs'
   # TODO implement support for Google Cloud Storage
   return
@@ -51,32 +86,56 @@ end
 
 # ensure the install directory exists
 directory node['datos']['recoverx']['install_dir'] do
-  action :create
   mode '0770'
   owner node['datos']['recoverx']['user']
   group node['datos']['recoverx']['group']
+  action :create
 end
 
 # download the tarball and put it in the install directory
 remote_file "#{node['datos']['recoverx']['install_dir']}/datos.tar.gz"  do
   source node['datos']['recoverx']['download_url']
+  owner node['datos']['recoverx']['user']
+  group node['datos']['recoverx']['group']
+  mode '0755'
+  action :create_if_missing
 end
 
 # untar the install tarball
 include_recipe 'tarball::default'
-tarballx "#{node['datos']['recoverx']['install_dir']}/datos.tar.gz"  do
+tarball "#{node['datos']['recoverx']['install_dir']}/datos.tar.gz"  do
   destination node['datos']['recoverx']['install_dir']
-  owner      default['datos']['recoverx']['user']
-  group      default['datos']['recoverx']['group']
+  owner node['datos']['recoverx']['user']
+  group node['datos']['recoverx']['group']
+  not_if { ::File.directory?("#{node['datos']['recoverx']['install_dir']}/datos_#{node['datos']['recoverx']['version']}") }
   action :extract
 end
 
 # TODO Need to come up with a better way to get the IP address
-local_ipv4 = node['network']['interfaces']['eth1']['addresses'].keys[1]
+local_ipv4 = node['network']['interfaces']['eth0']['addresses'].keys[1]
 
-exec 'install_recoverx' do
+# Ensure python2.6 is installed
+# matching command: add-apt-repository ppa:fkrull/deadsnakes
+case node[:platform]
+when 'ubuntu'
+  apt_repository 'fkrull-deadsnakes' do
+    uri          'ppa:fkrull/deadsnakes'
+    distribution node['lsb']['codename']
+  end
+when 'redhat', 'centos'
+end
+
+%w{python2.6 libpython2.6}.each do |pkg|
+  package pkg do
+    action :install
+  end
+end
+
+execute 'install_recoverx' do
   command "./install_datos --ip-address #{local_ipv4} --target-dir #{node['datos']['recoverx']['install_dir']}"
-  cwd "#{node['datos']['recoverx']['install_dir']}/#{node['datos']['recoverx']['version']}"
+  user node['datos']['recoverx']['user']
+  group node['datos']['recoverx']['group']
+  cwd "#{node['datos']['recoverx']['install_dir']}/datos_#{node['datos']['recoverx']['version']}"
 end
 
 # Do the extra Mongodb specific tasks
@@ -92,7 +151,7 @@ if node['datos']['recoverx']['node_type'].downcase == 'mongodb'
   end
 
   # <datos_user>$sudo modprobe fuse
-  exec 'modprobe_fuse' do
+  execute 'modprobe_fuse' do
     command '/sbin/modprobe fuse'
     cwd "#{node['datos']['recoverx']['install_dir']}/#{node['datos']['recoverx']['version']}"
   end
@@ -104,6 +163,5 @@ if node['datos']['recoverx']['node_type'].downcase == 'mongodb'
     fstype 'fusectl'
     action :mount
   end
-  
 
 end

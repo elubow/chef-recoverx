@@ -4,7 +4,7 @@ maintainer_email 'eric@lubow.org'
 license          'All rights reserved'
 description      'Installs/Configures Datos RecoverX'
 long_description IO.read(File.join(File.dirname(__FILE__), 'README.md'))
-version          '0.0.1'
+version          '0.0.15'
 
 supports 'ubuntu'
 

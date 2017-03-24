@@ -7,9 +7,12 @@ default['datos']['recoverx']['enabled'] = true
 
 # datos user on the recoverx nodes
 default['datos']['recoverx']['user'] = 'datos_user'
+default['datos']['recoverx']['user_homedir'] = "/home/#{default['datos']['recoverx']['user']}"
+default['datos']['recoverx']['uid'] = 1001
 
 # datos group on the recoverx nodes
 default['datos']['recoverx']['group'] = 'datos_user'
+default['datos']['recoverx']['gid'] = 1001
 
 # version of Datos RecoverX to install
 default['datos']['recoverx']['version'] = '1.0.0'
