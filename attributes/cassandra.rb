@@ -1,7 +1,7 @@
 # *nix user that Datos client runs under
-default['datos']['recoverx']['cassandra']['user'] = 'datos_db_user'
+default['datos']['recoverx']['cassandra']['user'] = 'datos_user'
 default['datos']['recoverx']['cassandra']['user_homedir'] = "/home/#{default['datos']['recoverx']['cassandra']['user']}"
-default['datos']['recoverx']['cassandra']['uid'] = '1002'
+default['datos']['recoverx']['cassandra']['uid'] = '1001'
 
 # *nix group that Cassandra runs under
 default['datos']['recoverx']['cassandra']['group'] = 'cassandra'

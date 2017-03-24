@@ -59,7 +59,6 @@ limits_config 'system-wide limits' do
   ]
 end
 
-# XXX this may or may not work properly
 # set the nproc limits locally
 limits_config '90-nproc' do
   limits [
@@ -74,7 +73,11 @@ include_recipe 'recoverx::hosts'
 
 if node['datos']['recoverx']['storage_type'].downcase == 'nfs'
   # TODO implement support for NFS mounts
-  # TODO uid/gid's must match for NFS setup
+  # uid/gid's must match for NFS setup
+  if node['datos']['recoverx']['uid'] != node['datos']['recoverx']['gid']
+    Chef::Log.error "uid #{node['datos']['recoverx']['uid']} != gid #{node['datos']['recoverx']['gid']} - RecoverX will not work properly under these circumstances ... skipping"
+    return
+  end
 elsif node['datos']['recoverx']['storage_type'].downcase == 'gcs'
   # TODO implement support for Google Cloud Storage
   return
@@ -125,43 +128,29 @@ when 'ubuntu'
 when 'redhat', 'centos'
 end
 
+# we need to ensure that Python 2.6 is installed for the installer
 %w{python2.6 libpython2.6}.each do |pkg|
   package pkg do
     action :install
   end
 end
 
+# Decide whether or not we need to include the --no-nfs switch in the installer
+do_nfs = node['datos']['recoverx']['storage_type'].downcase != 'nfs' ?
+  '--no-nfs' :
+  ''
+
 execute 'install_recoverx' do
-  command "./install_datos --ip-address #{local_ipv4} --target-dir #{node['datos']['recoverx']['install_dir']}"
+  command "./install_datos --skip-eula-check --ip-address #{local_ipv4} --target-dir #{node['datos']['recoverx']['install_dir']} #{do_nfs}"
   user node['datos']['recoverx']['user']
   group node['datos']['recoverx']['group']
   cwd "#{node['datos']['recoverx']['install_dir']}/datos_#{node['datos']['recoverx']['version']}"
 end
 
 # Do the extra Mongodb specific tasks
-if node['datos']['recoverx']['node_type'].downcase == 'mongodb'
-
-  # XXX Convert these to chef commands
-  # <datos_user>$sudo chown root <datos_install>/lib/fuse/bin/fusermount
-  # <datos_user>$sudo chmod u+s <datos_install>/lib/fuse/bin/fusermount
-  directory "#{node['datos']['recoverx']['install_dir']}/lib/fuse/bin/fusermount" do
-    owner 'root'
-    mode '4655' # 4 = suid bit, check the rest
-    action :create
-  end
-
-  # <datos_user>$sudo modprobe fuse
-  execute 'modprobe_fuse' do
-    command '/sbin/modprobe fuse'
-    cwd "#{node['datos']['recoverx']['install_dir']}/#{node['datos']['recoverx']['version']}"
-  end
-
-
-  # mount the fusectl drive
-  mount '/sys/fs/fuse/connections' do
-    device 'fusectl'
-    fstype 'fusectl'
-    action :mount
-  end
-
+case node['datos']['recoverx']['node_type'].downcase
+when 'mongodb'
+  include_recipe 'recoverx::mongodb'
+when 'cassandra'
+  include_recipe 'recoverx::cassandra'
 end
